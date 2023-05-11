@@ -7,7 +7,7 @@ The Python server (receive_server.py) needs to be launched on the host machine w
 Before launch, generate an API key and apply to both of the scripts and ensure the serverAddress for the reader.go points towards the receiver server.
 
 ## Disclaimer
-This project is for research purposes only. This porject is NOT recommended to be used maliciously and only for educational purposes.
+This project is for research purposes only. This project is NOT to be used maliciously and is only for educational purposes.
 
 
 ### Getting Started

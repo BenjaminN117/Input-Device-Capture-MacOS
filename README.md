@@ -19,9 +19,9 @@ This project is for research purposes only. This project is NOT to be used malic
 5) Deploy the reader application on the target machine
 
 Build the reader into a single package
-'''
+```
 go build reader.go
-'''
+```
 
 
 ## Features to be added

@@ -10,7 +10,7 @@ Before launch, generate an API key and apply to both of the scripts and ensure t
 This project is for research purposes only. This project is NOT to be used maliciously and is only for educational purposes.
 
 
-### Getting Started
+## Getting Started
 
 1) Generate an API key and add to the reader.go and receiver_server.py
 2) Ensure the reader is relaying information to the correct server address
@@ -19,5 +19,12 @@ This project is for research purposes only. This project is NOT to be used malic
 5) Deploy the reader application on the target machine
 
 Build the reader into a single package
-    $ go build reader.go
-    
+'''
+go build reader.go
+'''
+
+
+## Features to be added
+
+- Encrypt the JSON data
+- Use a Proxy to obfuscate the true location of the reveiving server

